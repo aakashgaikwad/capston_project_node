@@ -1,23 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: django-backend
-  labels:
-    app: django-backend
+  name: learn-kubernetes-deployment
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
-      app: django-backend
+      app: express-docker-kubernetes
   template:
     metadata:
       labels:
-        app: django-backend
+        app: express-docker-kubernetes
     spec:
       containers:
-        - name: django-kube
-          imagePullPolicy: Always
-          image: aakashgaikwad/capstone1python:latest
-          command: ["./manage.py", "runserver", "0.0.0.0:8000"]
-          ports:
-          - containerPort: 8000
+      - name: express-docker-kubernetes
+        image: aakashgaikwad/capstone1python:v1
+        ports:
+        - containerPort: 3000
