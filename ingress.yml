@@ -6,7 +6,7 @@ metadata:
     nginx.ingress.kubernetes.io/rewrite-target: /$1
 spec:
   rules:
-    - host: hello-world.info
+    - host: ec2-13-234-29-210.ap-south-1.compute.amazonaws.com
       http:
         paths:
           - path: /
