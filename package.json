@@ -6,9 +6,11 @@
   "directories": {
     "test": "tests"
   },
+
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
-  },
+},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/aakashgaikwad/capston_project_python.git"
