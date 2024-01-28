@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: learn-kubernetes-deployment
+  name: my-deployment
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
-      app: express-docker-kubernetes
+      app: my-kubernetes-project
   template:
     metadata:
       labels:
-        app: express-docker-kubernetes
+        app: my-kubernetes-project
     spec:
       containers:
-      - name: express-docker-kubernetes
+      - name: my-kubernetes-project
         image: aakashgaikwad/capstone1python:v1
         ports:
         - containerPort: 3000
