@@ -7,6 +7,6 @@ spec:
     app: my-kubernetes-project
   type: LoadBalancer
   ports:
-  - protocol: HTTP
+  - protocol: TCP
     port: 80
     targetPort: 3000
