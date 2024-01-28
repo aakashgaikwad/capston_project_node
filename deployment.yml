@@ -9,7 +9,6 @@ spec:
       app: my-kubernetes-project
   template:
     metadata:
-      namespace: nodejsapp
       labels:
         app: my-kubernetes-project
     spec:
