@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: my-deployment
-  namespace: nodejsapp
 spec:
   replicas: 1
   selector:
@@ -10,6 +9,7 @@ spec:
       app: my-kubernetes-project
   template:
     metadata:
+      namespace: nodejsapp
       labels:
         app: my-kubernetes-project
     spec:
