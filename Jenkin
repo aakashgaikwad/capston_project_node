@@ -66,7 +66,7 @@ pipeline {
 
         stage('publish') {
            steps {
-           withKubeConfig([credentialsId: 'minikubeconfigv1', serverUrl: 'https://172.31.1.46:8443']) {
+           withKubeConfig([credentialsId: 'minikubeconfigv1', serverUrl: 'https://192.168.49.2:8443']) {
               
                 sh 'kubectl apply -f deployment.yml'
                  sh 'kubectl apply -f service.yml'
