@@ -1,7 +1,7 @@
+# This is Project No. 2 from Capstone projects
 
-
-# Objective 
-This is Project No. 2 from capstone prject, below is the objective of project as per requirement::
+## Objective 
+### Below is the objective of project as per requirement::
 
 Kingston Inc, a prominent technology company, faces a crucial challenge in efficiently
 configuring, provisioning, and monitoring its Node.js applications. As Kingston Inc continues to
@@ -12,93 +12,195 @@ effectively. This project aims to ensure the seamless deployment of Node.js appl
 leveraging modern technologies and best practices while embracing the growing demand for
 reliable web services.
 
-
-Solution ::
-To fullfill above obective I have followed below steps ::
-1. Creating node j
-1. Created Node js application which can perform add update delete operations on Users.
-
-
-
-Creating a README file for installing Minikube involves providing instructions on how to set up Minikube, including its prerequisites and basic usage. Here's a template you can use:
-
----
-
-# Installing Minikube
-
-## Introduction
-
-Minikube is a tool that allows you to run Kubernetes locally. This README provides instructions for installing Minikube on your system.
-
 ## Prerequisites
+1. Docker hub account.
+2. github account (To push code)
+3. AWS account-optional (As deployment is hosted on aws linux server, this can be done on local machine).
 
-Before installing Minikube, ensure you have the following prerequisites installed on your system:
+## Solution ::
+To fullfill above obective I have followed below steps ::
+## Create node js application 
+1. Created node js application with respective pages which can perform CRUD operations on users.
+2. Integrated mongodb as a database to store data in database.
 
-- Docker: Minikube requires Docker to run Kubernetes nodes.
-- kubectl: The Kubernetes command-line tool (`kubectl`) is used to interact with Kubernetes clusters.
-- A hypervisor: Depending on your operating system, you may need a hypervisor such as VirtualBox, Hyperkit, or KVM to run Minikube.
+## Create deployment related files.
+### 1 Docker file
+1. Created docker file to containerize application.
+2. Docker file includes steps to install node as dependencies and install application dependencies from package.json file.
+3. Docker file also includes steps to copy build files to container and running the application.
 
-## Installation Steps
+### 2 Files related to kubernetes deployment and ingress configurations.
+1. Created deployment.yml file to create deployment, added replica sets and container ports.
+2. Created service.yml file to expose the deployment.
+3. Created ingress.yml file which will be used to expose the application to outside world.
+    
+### 3 Files related to Jenkin.
+- Created Jenkin file which includes below jenkin pipeline steps.
+- - It includes below steps::
+  - Setting environment variables like docker registery etc
+  - Checkout:: Fetching souce code from git
+  - Build Image
+  - Push To DockerHub
+  - Deploy & Publish application
 
-Follow these steps to install Minikube on your system:
+# Infrastructure Set up
+## This includes below steps.
+1. Creating AWS EC2 linux instance for application (used t2.medium).
+2. Creating AWS EC2 linux instance for Prometheus (t2.medium).
+3. Creating AWS EC2 linux instance for Grafana (t2.medium).
+4. Installing below dependencies
+   - Docker
+   - Minikube
+   - Java
+   - Jenkins
+   - Prometheus
+   - Grafana
 
-1. **Download Minikube Binary:**
+## Docker & Minikube installation 
+## Minikube on AWS EC2
 
-   Download the Minikube binary for your operating system from the [official Minikube releases page](https://github.com/kubernetes/minikube/releases). Make sure to download the latest stable release.
+### Install docker on EC2 Ubantu
+```
+sudo apt-get update
+sudo apt-get install ca-certificates curl gnupg lsb-release
 
-2. **Install Minikube:**
+sudo mkdir -m 0755 -p /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 
-   Once you've downloaded the Minikube binary, follow the installation instructions for your operating system:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
 
-   - **Linux:**
+sudo apt-get update
+sudo chmod a+r /etc/apt/keyrings/docker.gpg
+sudo apt-get update
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-     ```bash
-     sudo install minikube-linux-amd64 /usr/local/bin/minikube
-     ```
+sudo systemctl status docker
+sudo systemctl enable --now docker
+sudo usermod -aG docker ec2-user
+newgrp docker
+sudo systemctl restart docker
+docker ps
+```
 
-   - **macOS:**
+### Install Kubectl
+```
+https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+```
+```
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+mv kubectl /bin/kubectl
+chmod a+x /bin/kubectl
+```
 
-     ```bash
-     sudo install minikube-darwin-amd64 /usr/local/bin/minikube
-     ```
+### Install Minikube
+```
+https://aws.plainenglish.io/running-kubernetes-using-minikube-cluster-on-the-aws-cloud-4259df916a07
+https://minikube.sigs.k8s.io/docs/start/
+https://minikube.sigs.k8s.io/docs/drivers/none/#requirements
+```
+```
+curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+sudo install minikube-linux-amd64 /usr/bin/minikube
+sudo apt install conntrack -y
+```
+If you want to use the combination of the none driver from Kubernetes v1.24+ the Docker container runtime you'll need to install cri-dockerd on your system
+Install cri-dockerd & Install go
+### Install cri-dockerd
+```
+apt install git -y
+apt  install golang-go
+git clone https://github.com/Mirantis/cri-dockerd.git
+```
+```
+mkdir bin
+VERSION=$((git describe --abbrev=0 --tags | sed -e 's/v//') || echo $(cat VERSION)-$(git log -1 --pretty='%h')) PRERELEASE=$(grep -q dev <<< "${VERSION}" && echo "pre" || echo "") REVISION=$(git log -1 --pretty='%h')
+go build -ldflags="-X github.com/Mirantis/cri-dockerd/version.Version='$VERSION}' -X github.com/Mirantis/cri-dockerd/version.PreRelease='$PRERELEASE' -X github.com/Mirantis/cri-dockerd/version.BuildTime='$BUILD_DATE' -X github.com/Mirantis/cri-dockerd/version.GitCommit='$REVISION'" -o cri-dockerd
+```
+```
+# Run these commands as root
+###Install GO###
+wget https://storage.googleapis.com/golang/getgo/installer_linux
+chmod +x ./installer_linux
+./installer_linux
+source ~/.bash_profile
+```
+```
+cd cri-dockerd
+mkdir bin
+go build -o bin/cri-dockerd
+mkdir -p /usr/local/bin
+install -o root -g root -m 0755 bin/cri-dockerd /usr/local/bin/cri-dockerd
+cp -a packaging/systemd/* /etc/systemd/system
+sed -i -e 's,/usr/bin/cri-dockerd,/usr/local/bin/cri-dockerd,' /etc/systemd/system/cri-docker.service
+systemctl daemon-reload
+systemctl enable cri-docker.service
+systemctl enable --now cri-docker.socket
+```
 
-   - **Windows:**
+### Install CRICTL
+https://github.com/kubernetes-sigs/cri-tools/blob/master/docs/crictl.md
+```
+VERSION="v1.26.0" # check latest version in /releases page
+wget https://github.com/kubernetes-sigs/cri-tools/releases/download/$VERSION/crictl-$VERSION-linux-amd64.tar.gz
+sudo tar zxvf crictl-$VERSION-linux-amd64.tar.gz -C /usr/local/bin
+rm -f crictl-$VERSION-linux-amd64.tar.gz
 
-     Move the `minikube-windows-amd64.exe` file to a directory in your system's PATH.
+cat <<EOF | sudo tee /etc/crictl.yaml
+runtime-endpoint: unix:///run/containerd/containerd.sock
+image-endpoint: unix:///run/containerd/containerd.sock
+timeout: 2
+debug: false
+pull-image-on-create: false
+EOF
+```
+### Install containernetworking-plugins
+Pick the version from here -> https://github.com/containernetworking/plugins/releases
+```
+CNI_PLUGIN_VERSION="<version_here>"
+CNI_PLUGIN_TAR="cni-plugins-linux-amd64-$CNI_PLUGIN_VERSION.tgz" # change arch if not on amd64
+CNI_PLUGIN_INSTALL_DIR="/opt/cni/bin"
 
-3. **Start Minikube Cluster:**
+curl -LO "https://github.com/containernetworking/plugins/releases/download/$CNI_PLUGIN_VERSION/$CNI_PLUGIN_TAR"
+sudo mkdir -p "$CNI_PLUGIN_INSTALL_DIR"
+sudo tar -xf "$CNI_PLUGIN_TAR" -C "$CNI_PLUGIN_INSTALL_DIR"
+rm "$CNI_PLUGIN_TAR"
+```
+### Start Minikube
+```
+minikube start --vm-driver=none
+```
 
-   After installing Minikube, you can start a local Kubernetes cluster by running:
 
-   ```bash
-   minikube start
+## Set up Jenkins ::
+### Jenkins Install & Configuration  
+```
+- sudo apt update 
+- sudo apt install openjdk-8-jdk  
+- sudo wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo  
+- sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key  
+- yum install jenkins -y  
+- sudo systemctl start jenkins  
+``` 
+
+### Update below config file  
+vi ~/.bashrc  
+export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto-devel  
+source ~/.bashrc  
+
+## Set up Jenkin and deployment pipeline 
+ - Add port 8080 as a inbound rule in security group
+ - Access application on http://serverip:8080/
+ - To get default password use below command
    ```
-
-   This command starts a single-node Kubernetes cluster using the default settings.
-
-4. **Verify Installation:**
-
-   To verify that Minikube is installed and running correctly, you can run:
-
-   ```bash
-   kubectl get nodes
+   -sudo cat /var/lib/jenkins/secrets/initialAdminPassword
    ```
+ - Set up new password
+ - Add Jenkins plugins like kubernetes, docker in Jenkins plugin Manager.
+ - Set up secrets for Docker hub registery , github , Kubeconfig etc from .
+ - Create new pipeline and give path of git jenkin file.
+ - Run the pipeline.
+ - Access the website on http://serverip:30000/
 
-   You should see the Minikube node listed with a status of `Ready`.
 
-## Additional Configuration (Optional)
-
-- **Customizing Minikube Configuration:** You can customize the Minikube configuration using command-line flags or by modifying the `~/.minikube/config/config.json` file.
-- **Using a Specific Kubernetes Version:** You can specify a specific Kubernetes version when starting Minikube using the `--kubernetes-version` flag.
-
-## Usage
-
-Now that Minikube is installed, you can use it to deploy and manage applications on your local Kubernetes cluster. Refer to the [Minikube documentation](https://minikube.sigs.k8s.io/docs/) for more information on using Minikube.
-
-## Troubleshooting
-
-If you encounter any issues during the installation process, refer to the [Minikube documentation](https://minikube.sigs.k8s.io/docs/) or search for solutions in the Minikube GitHub repository's [issue tracker](https://github.com/kubernetes/minikube/issues).
-
----
-
-Feel free to customize this README to include any specific instructions or details relevant to your environment or use case. Additionally, you may want to include information on upgrading or uninstalling Minikube, as well as any best practices or tips for working with Minikube.
