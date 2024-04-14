@@ -204,4 +204,54 @@ source ~/.bashrc
  - Run the pipeline.
  - Access the website on http://serverip:30000/
 
+# Set up Monitoring Tools Prometheus and Grafana 
+    ## Starting Prometheus
+    
+    - I have used npm prom-client library for monitoring.
+    - ```server.js``` file contains custom metrics for monitoring.
+    - configured Prometheus docker image in ```prometheus.yml``` file.
+    - The config file tells Prometheus to scrape all targets every 5 seconds. The targets are defined under scrape_configs. On Mac, you need to use docker.for.mac.host.internal as host,
+    so that the Prometheus Docker container can scrape the metrics of the local Node.js HTTP server. On Windows, use docker.for.win.localhost and for Linux use localhost.
+    -Use the docker run command to start the Prometheus Docker container and mount the configuration file (prometheus.yml):
 
+    ```
+    docker run --rm -p 9090:9090 \
+   -v `pwd`/prometheus.yml:/etc/prometheus/prometheus.yml \
+    prom/prometheus:v2.20.1
+    ```
+
+    You should now be able to access the Prometheus Web UI on http://localhost:9090
+    ## Starting Grafana
+    - Created a configuration file called datasources.yml to configure Grafana docker image.
+    
+   - Use the following command to start a Grafana Docker container and to mount the configuration file of the datasources (datasources.yml). We also pass some environment variables to disable the login form and to allow anonymous access to Grafana:
+
+     ```
+docker run --rm -p 3000:3000 \
+  -e GF_AUTH_DISABLE_LOGIN_FORM=true \
+  -e GF_AUTH_ANONYMOUS_ENABLED=true \
+  -e GF_AUTH_ANONYMOUS_ORG_ROLE=Admin \
+  -v `pwd`/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml \
+  grafana/grafana:7.1.5
+     ```
+## Configuring a Grafana Dashboard
+Once the metrics are available in Prometheus, we want to view them in Grafana. This requires creating a dashboard and adding panels to that dashboard:
+
+- Go to the Grafana UI at http://localhost:3000, click the + button on the left, and select Dashboard.
+- In the new dashboard, click on the Add new panel button.
+- In the Edit panel view, you can select a metric and configure a chart for it.
+- The Metrics drop-down on the bottom left allows you to choose from the available metrics. Let’s use one of the default metrics for this example.
+- Type process_resident_memory_bytes into the Metrics input and {{app}} into the Legend input.
+- On the right panel, enter Memory Usage for the Panel title.
+- As the unit of the metric is in bytes we need to select bytes(Metric) for the left y axis in the Axes section, so that the chart is easy to read for humans.
+
+## Setting up alerts in Grafana
+Since nobody wants to sit in front of Grafana all day watching and waiting to see if things go wrong, Grafana allows you to define alerts. These alerts regularly check whether a metric adheres to a specific rule, for example, whether the errors per second have exceeded a specific value.
+
+Alerts can be set up for every panel in your dashboards.
+
+- Go into the Grafana dasboard we just created.
+- Click on a panel title and select edit.
+- Once in the edit view, select "Alerts" from the middle tabs, and press the Create Alert button.
+- In the Conditions section specify 42000000 after IS ABOVE. This tells Grafana to trigger an alert when the Node.js HTTP server consumes more than 42 MB Memory.
+- Save the alert by pressing the Apply button in the top right.
