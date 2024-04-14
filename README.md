@@ -203,35 +203,26 @@ source ~/.bashrc
  - Create new pipeline and give path of git jenkin file.
  - Run the pipeline.
  - Access the website on http://serverip:30000/
-
 # Set up Monitoring Tools Prometheus and Grafana 
-## Starting Prometheus
+- Starting Prometheus
     - I have used npm prom-client library for monitoring.
     - server.js file contains custom metrics for monitoring.
     - configured Prometheus docker image in prometheus.yml file.
     - The config file tells Prometheus to scrape all targets every 5 seconds. The targets are defined under scrape_configs. On Mac, you need to use docker.for.mac.host.internal as host,
     so that the Prometheus Docker container can scrape the metrics of the local Node.js HTTP server. On Windows, use docker.for.win.localhost and for Linux use localhost.
     -Use the docker run command to start the Prometheus Docker container and mount the configuration file (prometheus.yml):
-
-    ```
+    
     docker run --rm -p 9090:9090 \
    -v pwd /prometheus.yml:/etc/prometheus/prometheus.yml \
     prom/prometheus:v2.20.1
-    ```
+
 
     You should now be able to access the Prometheus Web UI on http://localhost:9090
-    ## Starting Grafana
+  -Starting Grafana
     - Created a configuration file called datasources.yml to configure Grafana docker image.
-   - Use the following command to start a Grafana Docker container and to mount the configuration file of the datasources (datasources.yml). We also pass some environment variables to disable the login form and to allow anonymous access to Grafana:
-
-     ```
-docker run --rm -p 3000:3000 \
-  -e GF_AUTH_DISABLE_LOGIN_FORM=true \
-  -e GF_AUTH_ANONYMOUS_ENABLED=true \
-  -e GF_AUTH_ANONYMOUS_ORG_ROLE=Admin \
-  -v pwd /datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml \
-  grafana/grafana:7.1.5
-     ```
+    - Use the following command to start a Grafana Docker container and to mount the configuration file of the datasources (datasources.yml). We also pass some environment variables to disable the login form and to allow anonymous access to Grafana:
+    docker run --rm -p 3000:3000 \-e GF_AUTH_DISABLE_LOGIN_FORM=true \-e GF_AUTH_ANONYMOUS_ENABLED=true \-e GF_AUTH_ANONYMOUS_ORG_ROLE=Admin \-v pwd /datasources.yml:/etc/grafana/provisioning/datasources/datasources.yml \grafana/grafana:7.1.5
+    
 ## Configuring a Grafana Dashboard
 Once the metrics are available in Prometheus, we want to view them in Grafana. This requires creating a dashboard and adding panels to that dashboard:
 
