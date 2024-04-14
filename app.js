@@ -26,8 +26,7 @@ const server = http.createServer(async (req, res) => {
 // connect to mongodb & listen for requests
 //nODpvVvD17SNlook
 
-const dbURI = "mongodb+srv://admin:nODpvVvD17SNlook@capstone2.tbaxjby.mongodb.net/?retryWrites=true&w=majority&appName=capstone2";
-
+const dbURI = process.env.dbConnectionString;
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true }) //this return promise
   .then((result) =>{ console.log("Database-connected"); app.listen(3000)})
   //after db connected than it will listen to port3000
