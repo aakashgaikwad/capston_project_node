@@ -1,12 +1,31 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const User = require('./models/user');
-
+const http = require('http')
+const url = require('url')
+const client = require('prom-client')
 // express app
 const app = express();
+const register = new client.Registry()
+register.setDefaultLabels({
+  app: 'capstone2-nodejs-app'
+})
+client.collectDefaultMetrics({ register })
 
+// Define the HTTP server
+const server = http.createServer(async (req, res) => {
+  // Retrieve route from request object
+  const route = url.parse(req.url).pathname
+
+  if (route === '/metrics') {
+    // Return all metrics the Prometheus exposition format
+    res.setHeader('Content-Type', register.contentType)
+    res.end(register.metrics())
+  }
+})
 // connect to mongodb & listen for requests
 //nODpvVvD17SNlook
+
 const dbURI = "mongodb+srv://admin:nODpvVvD17SNlook@capstone2.tbaxjby.mongodb.net/?retryWrites=true&w=majority&appName=capstone2";
 
 mongoose.connect(dbURI, { useNewUrlParser: true, useUnifiedTopology: true }) //this return promise
@@ -21,7 +40,6 @@ app.set('view engine', 'ejs');
 // middleware & static files
 app.use(express.static('public')); //this will helps to use style.css file
 app.use(express.urlencoded({ extended: true })); //this will helps to get submitted data of form in req.body obj
-
 
 
 // home routes
